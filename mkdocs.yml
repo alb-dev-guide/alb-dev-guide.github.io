@@ -1,0 +1,16 @@
+site_name: Guide to Alb Development
+site_url: https://alb-dev-guide.github.io/
+
+nav:
+    - About this Guide: index.md
+    - Compiler Architecture: 
+        - Overview of the Compiler: compiler-overview.md
+    - Source Code Representation: 
+        - IMPEG: todo.md
+        - XMPEG: todo.md
+    - LC Generation and mil-tools Backend: 
+        - Todo: todo.md
+
+theme:
+  name: readthedocs
+
