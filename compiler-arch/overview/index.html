@@ -9,7 +9,7 @@
   
   <link rel="canonical" href="https://alb-dev-guide.github.io/compiler-arch/overview/">
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Compiler overview - Guide to Alb Development</title>
+  <title>Overview of the Compiler - Guide to Alb Development</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../../css/theme.css" />
@@ -18,7 +18,7 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Compiler overview";
+    var mkdocs_page_name = "Overview of the Compiler";
     var mkdocs_page_input_path = "compiler-arch/overview.md";
     var mkdocs_page_url = "/compiler-arch/overview/";
   </script>
@@ -51,8 +51,18 @@
                     </li>
                 </ul>
                 <p class="caption"><span class="caption-text">Compiler Architecture</span></p>
-                <ul>
-                    <li class="toctree-l1"><a class="" href="../../compiler-overview.md">Overview of the Compiler</a>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Overview of the Compiler</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#a-brief-tour-of-how-alb-compiles-programs">A brief tour of how alb compiles programs:</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#desugaring">Desugaring:</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#kind-inference-and-type-inference">Kind Inference and Type Inference:</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
                     </li>
                 </ul>
                 <p class="caption"><span class="caption-text">Source Code Representation</span></p>
@@ -87,8 +97,12 @@
     <li><a href="../..">Docs</a> &raquo;</li>
     
       
+        
+          <li>Compiler Architecture &raquo;</li>
+        
+      
     
-    <li>Compiler overview</li>
+    <li>Overview of the Compiler</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -102,33 +116,49 @@
               
                 <h1 id="compiler-overview">Compiler overview</h1>
 <h2 id="a-brief-tour-of-how-alb-compiles-programs">A brief tour of how alb compiles programs:</h2>
-<p><a href="https://github.com/habit-lang/alb/blob/master/src/Driver.hs">Driver.hs</a> is the entrypoint of alb. </p>
-<p>Compiler pipelines are defined in the <a href="https://github.com/habit-lang/alb/blob/5144e3a4c47ee62e4719644325d59e4adf193da1/src/Driver.hs#L293">buildPipeline function</a>, which constitutes of the following phases, which in reality is made up of smaller passes:</p>
+<p>Compilation process begins in <a href="https://github.com/habit-lang/alb/blob/master/src/Driver.hs">Driver.hs</a>, the entrypoint of alb. When alb is invoked, it will:
+- Build options from passed in command line arguments and/or .alb dotfile.
+- Build a list of filepaths with <code>findFiles</code> from each path passed in, searching for valid .hb/.lhb files if path to directories were given.
+- After a list of filepaths have been constructed, load the files and attempt to lex and parse them by invoking <code>readProgram</code> (TODO: break down and explain steps of lexing/parsing), and perform "Import Chasing"; For each file, it will check the list of "requires" and building a list of dependencies to other files. 
+- Then after parsing is done and no errors are encountered, build the compiler pipeline and execute it. This is where the magic happens.</p>
+<p>alb's compiler pipeline is defined in the <a href="https://github.com/habit-lang/alb/blob/master/src/Driver.hs#L293"><code>buildPipeline</code> function</a>, which consists of the following "phases" (which themselves are made up of smaller "passes"):</p>
 <ul>
 <li><a href="#desugaring">Desugaring</a></li>
-<li>Kind Inference</li>
-<li>Type Inference</li>
-<li>Specialization</li>
-<li>Normalization</li>
-<li>LC Generation</li>
+<li><a href="#kind-inference-and-type-inference">Kind Inference</a></li>
+<li><a href="#kind-inference-and-type-inference">Type Inference</a></li>
+<li><a href="">Specialization</a></li>
+<li><a href="">Normalization</a></li>
+<li><a href="">LC Generation</a></li>
 </ul>
-<p>And two additional "backend" phases where the work is passed on to mil-tools:</p>
+<p>Keen readers will also notice two additional stages in <code>buildPipeline</code>, LLVMed and Compiled. At the end of the frontend phases which ends with LC Generation, alb's job is done. The generated LC code is merely passed on to <a href="https://github.com/habit-lang/mil-tools/">milc</a> to do the hard work of emitting LLVM IR and machine code.</p>
+<p>In this chapter we will look into how each of these frontend phases transform the code from a bird's eye view, and in more detail in later chapters.</p>
+<h3 id="desugaring">Desugaring:</h3>
+<p>First, the compiler will attempt to "desugar" the program; decomposing higher-lever features into core language constructs. As they will no longer have to deal with syntactic sugar, this step helps simplify the code for subsequent phases (and passes). In alb, we have the following passes:</p>
 <ul>
-<li>Normalization</li>
-<li>Specialization</li>
+<li><a href="https://github.com/habit-lang/alb/blob/master/src/Analyzer/Fixity.hs">fixityProgram</a>: Resolve infix operators, i.e. rewriting 1 + 2 into applicative form (+) 1 2.</li>
+<li><a href="https://github.com/habit-lang/alb/blob/master/src/Analyzer/Freshening.hs">freshenProgram</a>: "Freshen" by assigning unique name to each variable bindings, i.e. when there are variables that shadows another, give it a new unique name so as it does not conflict.</li>
+<li><a href="">eliminateTuplesProgram</a>: TODO</li>
+<li><a href="">patternTuplesProgram</a>: TODO </li>
+<li><a href="">generateTuples</a>: TODO</li>
+<li><a href="">desugarProgram</a>: TODO</li>
+<li><a href="">rewriteFunctionalNotation</a>: TODO</li>
 </ul>
-<p>In this chapter we will look into how each of these passes transform the code from a bird's eye view, and in more detail in the rest of the guide.</p>
-<h4 id="desugaring">Desugaring:</h4>
-<p>After parsing is done, we will enter the compiler pipeline. First, the compiler will attempt to "desugar" the program; decomposing higher-lever features into core language constructs. As they will no longer have to deal with syntactic sugar, this step helps simplify the code for subsequent phases (and passes). In alb, we have the following passes:
-- <a href="https://github.com/habit-lang/alb/blob/master/src/Analyzer/Fixity.hs">fixityProgram</a>: Resolving infix operators, i.e. rewriting 1 + 2 into applicative form (+) 1 2.
-- <a href="https://github.com/habit-lang/alb/blob/master/src/Analyzer/Freshening.hs">freshenProgram</a>: "Freshen" by assigning unique name to each variable bindings, i.e. when there are variables that shadows another, give it a new unique name so as it does not conflict.
-- <a href="">eliminateTuplesProgram</a>: TODO
-- TODO</p>
-<p>By the end of the desugaring phase, the program will have been translated into a simpler subset of Habit, dubbed <code>IMPEG</code>.</p>
+<p>By the end of the desugaring phase, the program will have been translated into a simpler, compiler-friendly subset of Habit, dubbed <code>IMPEG</code>. We use <code>IMPEG</code> to do <a href="#kind-inference-and-type-inference">Kind Inference and Type Inference</a>.</p>
+<h3 id="kind-inference-and-type-inference">Kind Inference and Type Inference:</h3>
+<p>TODO</p>
               
             </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../todo/" class="btn btn-neutral float-right" title="IMPEG">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../.." class="btn btn-neutral" title="About this Guide"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -152,6 +182,10 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
+      <span><a href="../.." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../todo/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
