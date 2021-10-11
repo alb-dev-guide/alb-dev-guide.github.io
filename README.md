@@ -20,4 +20,6 @@ mkdocs serve
 
 ## Deploying
 
-TODO
+```
+mkdocs gh-deploy
+```
