@@ -36,6 +36,19 @@ First, the compiler will attempt to "desugar" the program; decomposing higher-le
 
 By the end of the desugaring phase, the program will have been translated into a simpler, compiler-friendly subset of Habit, dubbed `IMPEG`. We use `IMPEG` to do [Kind Inference and Type Inference](#kind-inference-and-type-inference).
 
+> **Intermediate representations**
+> 
+> As with most compilers, `alb` works with several intermediate representation (IR) internally during the compilation
+> process. Language features that might complicate compilation are stripped away, what's left is a representation
+> that is less error-prone to work with and easier to apply crucial transformations and optimizations on.
+> 
+> During compilation, a Habit program have gone through transformations into a couple different IRs,
+> each optimized for different phases: `IMPEG`, `XMPEG`, `LC`, `MIL` and `LLVM IR`.
+> (TODO: why is blockquote styling broken?)
+>
+> (TODO: why is blockquote styling broken?)
+
+
 ### Kind Inference and Type Inference:
 
 TODO
