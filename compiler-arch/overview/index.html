@@ -160,10 +160,11 @@ so as it does not conflict.</li>
 <li><a href="">desugarProgram</a>: TODO</li>
 <li><a href="">rewriteFunctionalNotation</a>: TODO</li>
 </ul>
-<p>By the end of the desugaring phase, the program will have been translated into a simpler, compiler-friendly subset of Habit, dubbed <code>IMPEG</code>. We use <code>IMPEG</code> to do <a href="#kind-inference-and-type-inference">Kind Inference and Type Inference</a>.</p>
+<p>By the end of the desugaring phase, the program will have been translated into a simpler, compiler-friendly subset
+of Habit, dubbed <code>IMPEG</code>. We use <code>IMPEG</code> to do <a href="#kind-inference-and-type-inference">Kind Inference and Type Inference</a>.</p>
 <blockquote>
 <p><strong>Intermediate representations</strong></p>
-<p>As with most compilers, <code>alb</code> works with several intermediate representation (IR) internally during the compilation
+<p>As with most compilers, alb works with several intermediate representation (IR) internally during the compilation
 process. Language features that might complicate compilation are stripped away, what's left is a representation
 that is less error-prone to work with and easier to apply crucial transformations and optimizations on.</p>
 <p>During compilation, a Habit program have gone through transformations into a couple different IRs,
